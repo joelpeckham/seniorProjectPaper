@@ -1,0 +1,12 @@
+Sources
+paper.aux
+paper.bbl
+paper.fls
+paper.log
+paper.out
+paper.synctex.gz
+paper.fdb_latexmk
+paper.blg
+.vscode
+.DS_Store
+researchCode
