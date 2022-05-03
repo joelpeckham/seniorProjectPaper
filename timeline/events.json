@@ -1,0 +1,28 @@
+{
+    "width": 500,
+    "start": "Jan 1 2016",
+    "end": "Jan 1 2022",
+    "tick_format": "%b. %Y",
+    "callouts": [
+        [
+            "\"Attention is All You Need\" published.",
+            "Jun 12, 2017"
+        ],
+        [
+            "OpenAI announces GPT-2. (1.5B parameters)",
+            "Feb 14, 2019"
+        ],
+        [
+            "OpenAI publishes GPT-3 paper. (175B parameters)",
+            "May 28, 2020"
+        ],
+        [
+            "Aran Komatsuzaki publishes GPT-J weights and code. (6B parameters)",
+            "Jun 4, 2021"
+        ],
+        [
+            "We begin our work evaluating GPT-J",
+            "Aug 25, 2021"
+        ]
+    ]
+}

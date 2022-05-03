@@ -1,0 +1,2 @@
+python3 make_timeline.py events.json > timeline.svg
+inkscape --export-filename=timeline.pdf --export-type pdf timeline.svg

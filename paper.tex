@@ -12,6 +12,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{setspace}
+\usepackage{graphicx}
 \colorlet{punct}{red!60!black}
 \definecolor{background}{HTML}{fafafa}
 \definecolor{delim}{RGB}{20,105,176}
@@ -44,9 +45,9 @@
     \vspace{1.5cm}
     {\LARGE Southern Adventist University \par}
     \vfill
-    {\Large Senior Project\par}
+    {\Large Senior Capstone Research Project\par}
     \vspace{1cm}
-    {\huge\bfseries Algorithmically Trading like a Human with GPT-J\par}
+    {\huge\bfseries Evaluating the Performance of Large Transformer Networks Trading the News\par}
     \vspace{1cm}
     {\large Joel \textsc{Peckham}\par}
     \textsc{Email:} \href{mailto:joelskyler@gmail.com}{joelskyler@gmail.com}\par
@@ -58,11 +59,11 @@
     \vfill
     \begin{abstract}
         % \lipsum[1]
-        We explore the viability of using GPT-J, a 6 billion parameter natural language processing model, as a stock market trading indicator. This novel approach leverages both GPT-J's ability to process large, data-rich inputs and GPT-J's deep understanding of the world. We study the viability of using GPT-J as a natural-language-based stock prediction algorithm by creating and evaluating a small-scale test dataset. Our test dataset produced no significant results. 
+        We explore the viability of using GPT-J, a 6 billion parameter natural language processing model, as a stock market trading indicator. This novel approach leverages both GPT-J's ability to process large, data-rich inputs and GPT-J's deep understanding of the world. We test the performance of both the raw GPT-J-6B weights and our own custom fine-tuned model. Given our data and testing methodology, we found that neither the raw weights nor the fine-tuned model could perform better than random when predicting the direction of movement of a given stock.
     \end{abstract}
     
     \vfill
-    
+
     % Bottom of the page
     {\large \today\par}
 \end{titlepage}
@@ -73,17 +74,25 @@
 \twocolumn
 \thispagestyle{plain}
 \pagestyle{plain}
-\setstretch{1.07}
+% \setstretch{1.07}
 \section{Introduction}
-\subsection{Background}
-Algorithmic trading has become the dominant way of buying and selling securities. In the U.S. stock market, algorithms account for 70-80\% of trading volume \cite{Samuelsson2021}. The current generation of trading algorithms now use neural networks to improve prediction accuracy. However, some believe neural networks are incapable of inventing novel trading ideas and therefore can only increase trading efficiency by approximately 10\% \cite{Vonko2021}. On the other hand, we propose that recent increases in the scale of neural networks can unlock the ability to algorithmically invent winning trades. 
-
-Specifically, we propose that large-scale natural language processing models such as OpenAi's GPT-3 \cite{Brown2020} have captured a large enough understanding of the world, that given the proper input, they can generate novel, winning trades. Transformer networks of this type are designed to both ingest and output text. Taking into account the impressive knowledge displayed by GPT-3 and others in text-completion tasks, we propose that with adequate fine-tuning and well-engineered prompts, such networks can learn to trade like a human by reading the news, social media, and other sources such as SEC filings. In theory, by properly engineering our input text prompts, we can leverage the massive amount of real-world knowledge encoded in the network's weights.
-
-Because of the complications inherent in working with OpenAi and licensing GPT-3, we have instead chosen to use the open-source project GPT-J \cite{mesh-transformer-jax}. GPT-J is a transformer network \cite{Vaswani2017} that has been trained on an 825GiB language modeling data set called The Pile \cite{Gao2021}. Compared to GPT-3-Davinci's 175 billion network parameters, GPT-J's 6 billion parameters seem small, however, it has proved itself to be capable enough to outperform GPT-3 in some tasks such as code generation \cite{forefront}. Therefore, we believe that GPT-J will be sufficient to explore the viability of our novel approach to trading.
-
 \subsection{Problem Statement}
-As algorithmic traders seek to employ increasingly competitive and complex trading algorithms, we propose to study the viability of using GPT-J as a natural language-based stock prediction algorithm. This work will provide a foundation for developing and testing such an algorithm by building and evaluating a small-scale test dataset. 
+As algorithmic traders seek to employ increasingly competitive and complex trading algorithms, we recognized a need to determine the predictive power of transformer based NLP models such as GPT-J\cite{mesh-transformer-jax} in financial news analysis. This work seeks to draw clearer boundaries on the limitations and abilities of GPT-J and similar NLP models.
+
+\subsection{Research Design}
+Although transformer-based NLP models are adaptable to a wide variety of tasks, they are best suited for text completion. Therefore, we have re-formulated the task of processing a news article and then predicting the direction of stock price movement as a text completion task. This is done by introducing a prompt that wraps the body of the news article and hints to the network that the next token should be a predicted stock price. See Appendix \ref{Examples} for a sample prompt.
+
+\subsection{Background}
+\subsubsection{Leading Ideas and Questions}
+Our research is born from that idea that large-scale natural language processing models such as OpenAi's GPT-3 \cite{Brown2020} have captured a large enough understanding of the world, that given the proper input, they can generate novel, winning trades. Taking into account the impressive knowledge displayed by GPT-3 and others in text-completion tasks, we propose that with adequate fine-tuning and well-engineered prompts, such networks can learn to trade like a human simply by reading the news. In theory, with proper promts and adequate training, we can leverage the massive amount of real-world knowledge encoded in the network's weights.
+
+Our research is guided by the following question:
+\begin{quote}
+    ``Do the latest and greatest NLP neural networks understand the world and stock market well enough to trade the news?''
+\end{quote}
+
+\subsubsection{Why GPT-J?}
+Because of the complications inherent in working with OpenAi and licensing GPT-3, we have instead chosen to use the open-source project GPT-J \cite{mesh-transformer-jax}. GPT-J is a transformer network \cite{Vaswani2017} that has been trained on an 825GiB language modeling data set called The Pile \cite{Gao2021}. Compared to GPT-3-Davinci's 175 billion network parameters, GPT-J's 6 billion parameters seem small, however, it has proved itself to be capable enough to outperform GPT-3 in some tasks such as code generation \cite{forefront}. Therefore, we believe that GPT-J will be sufficient to explore the viability of our novel approach to trading.
 
 \section{Review of Literature}
 \subsection{Previous Methods}
@@ -105,35 +114,16 @@ Many neural network structures and methods have been used to create trading algo
 Most relevant to our work are methods that incorporate sentiment analysis of news sources. \cite{Mehta2021} evaluated sentiment analysis methods and found that LSTMs could correctly classify news tweets as indicative of positive or negative price movement 92\% of the time. \cite{Nan2020} found that adding sentiment analysis to a Deep-Q learning algorithm could improve the Sharpe Ratio (a measure of profit as compared to risk) of the agent by a factor greater than 2 in their test cases.
 
 \subsection{Relevance \& Novelty}
-By our estimation, the vast majority of previous works involving sentiment analysis used a pre-processing step to extract sentiment from the news and then embedded those features into a time-series dataset. News sources were often limited to headlines, tweets and small snippets because of the memory limitations of RNN sentiment classifiers. With the introduction of large transformer networks \cite{Vaswani2017}, capable of processing large amounts of text like OpenAi's GPT-3 \cite{Brown2020} or Wang \& Komatsuzaki's GPT-J \cite{gpt-j}, we believe a new class of trading network can be created. Readily available implementations of GPT-J allow for inputs with up to 2048 input tokens or words. Our method will encode the current world state in a large text input which combines sentiment, real-world facts, and stock price data into a single input. We believe that by combining rich input information with the network's pre-existing understanding of the world, the network will be able to produce significantly better trading signals than previous methods.
+By our estimation, the vast majority of previous works involving sentiment analysis used a pre-processing step to extract sentiment from the news and then embedded those features into a time-series dataset. News sources were often limited to headlines, tweets and small snippets because of the memory limitations of RNN sentiment classifiers. With the introduction of large transformer networks \cite{Vaswani2017}, capable of processing large amounts of text like OpenAi's GPT-3 \cite{Brown2020} or Wang \& Komatsuzaki's GPT-J \cite{gpt-j}, we believe a new class of trading network can be created. Readily available implementations of GPT-J allow for inputs with up to 2048 input tokens or words. Our method will encode the current world state in a large text input which combines sentiment, real-world facts, and stock price data into a single input.
 
-\section{Long-term Plan}
+\subsection{Brief History of Transformer Networks}
+\begin{figure}[ht]
+    \noindent\makebox[\textwidth]{%
+    \includegraphics[scale=0.85]{timeline/timeline}}
+    \caption[Timeline]{Approximate timeline of Bartolomé de Las Casas's life and travels.}
+\end{figure}
+\section{Preliminary Study}
 To guide our execution, we have outlined the goals, requirements, steps, and processes we intend to implement in the long term. This roadmap will guide the creation and evaluation of our small-scale test dataset.
-\subsection{Requirements \& Goals}
-\subsubsection{Functional requirements (user stories)}
-\begin{itemize}
-    \item As finance researchers, we want to quantify the ability of news releases, SEC filings, and social media posts to move stock prices.
-    \item As AI researchers, we want to evaluate the viability of using GPT-J as a stock movement indicator so that we can understand the power of GPT-J to understand complex real-world interactions.
-    \item As algorithmic traders, we want to evaluate the viability of using GPT-J as a stock movement indicator so that we can make more-informed trading decisions.
-\end{itemize}
-\subsubsection{Non-functional requirements}
-Our overall flow of execution as outlined in figure \ref{fig:executionFlow} is as follows:
-\begin{enumerate}
-    \item[•] We will evaluate the correlations between the following items:
-          \begin{enumerate}
-            \item The release of SEC filings for company X and large movements in the stock price of company X.
-            \item The release of news stories mentioning company X and large movements in the stock price of company X.
-            \item The posting of tweets or other social media posts mentioning company X and large movements in the stock price of company X.
-          \end{enumerate}
-    \item[•] We will evaluate the best ways of formatting prompts for GPT-J to increase output accuracy and consistency across varying inputs. Some options might include:
-          \begin{enumerate}
-            \item Providing a form for GPT-J to fill out appended to the end of the input data.
-            \item Asking GPT-J a direct question appended to the end of the input data.
-            \item Appending a universe current stock prices to the beginning of the input.
-            \item Appending multiple news stories from the past days and weeks at the beginning of the input.
-          \end{enumerate}
-    \item[•] We will deploy the best model from my previous evaluations and test it on live stock market data. We will compare the model's performance against market indices like the S\&P 500. 
-\end{enumerate}
 
 \begin{figure}[ht]
     \centering
