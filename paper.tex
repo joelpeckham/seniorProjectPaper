@@ -13,6 +13,7 @@
 \usepackage{xcolor}
 \usepackage{setspace}
 \usepackage{graphicx}
+\usepackage{ragged2e}
 \colorlet{punct}{red!60!black}
 \definecolor{background}{HTML}{fafafa}
 \definecolor{delim}{RGB}{20,105,176}
@@ -68,13 +69,14 @@
     {\large \today\par}
 \end{titlepage}
 \onecolumn
+\setstretch{0.9}
 \tableofcontents
 \listoffigures
 \listoftables
 \twocolumn
 \thispagestyle{plain}
 \pagestyle{plain}
-% \setstretch{1.07}
+\setstretch{1.07}
 \section{Introduction}
 \subsection{Problem Statement}
 As algorithmic traders seek to employ increasingly competitive and complex trading algorithms, we recognized a need to determine the predictive power of transformer based NLP models such as GPT-J\cite{mesh-transformer-jax} in financial news analysis. This work seeks to draw clearer boundaries on the limitations and abilities of GPT-J and similar NLP models.
@@ -113,94 +115,43 @@ Many neural network structures and methods have been used to create trading algo
 
 Most relevant to our work are methods that incorporate sentiment analysis of news sources. \cite{Mehta2021} evaluated sentiment analysis methods and found that LSTMs could correctly classify news tweets as indicative of positive or negative price movement 92\% of the time. \cite{Nan2020} found that adding sentiment analysis to a Deep-Q learning algorithm could improve the Sharpe Ratio (a measure of profit as compared to risk) of the agent by a factor greater than 2 in their test cases.
 
-\subsection{Relevance \& Novelty}
-By our estimation, the vast majority of previous works involving sentiment analysis used a pre-processing step to extract sentiment from the news and then embedded those features into a time-series dataset. News sources were often limited to headlines, tweets and small snippets because of the memory limitations of RNN sentiment classifiers. With the introduction of large transformer networks \cite{Vaswani2017}, capable of processing large amounts of text like OpenAi's GPT-3 \cite{Brown2020} or Wang \& Komatsuzaki's GPT-J \cite{gpt-j}, we believe a new class of trading network can be created. Readily available implementations of GPT-J allow for inputs with up to 2048 input tokens or words. Our method will encode the current world state in a large text input which combines sentiment, real-world facts, and stock price data into a single input.
-
-\subsection{Brief History of Transformer Networks}
+\subsection{History of Transformer Networks}
 \begin{figure}[ht]
-    \noindent\makebox[\textwidth]{%
-    \includegraphics[scale=0.85]{timeline/timeline}}
+    \makebox{%
+    \includegraphics[scale=0.67]{timeline/timeline}}
     \caption[Timeline]{Approximate timeline of Bartolomé de Las Casas's life and travels.}
 \end{figure}
-\section{Preliminary Study}
-To guide our execution, we have outlined the goals, requirements, steps, and processes we intend to implement in the long term. This roadmap will guide the creation and evaluation of our small-scale test dataset.
+\begin{enumerate}
+    \item (Jun. 2017) ``Attention Is All You Need" \cite{Vaswani2017} Was a groundbreaking paper introducing the Transformer network. Transformers became the foundation for the next 5+ years of NLP (Natural Language Processing) research.
+    \item (Feb. 2019) OpenAI releases GPT-2, a quantum-leap forward in general NLP tasks. GPT-2 was trained in an un-supervised fashion on 40GB of internet text and has 1.5B parameters. GPT-2 could perform perform rudimentary reading comprehension, machine translation, question answering, and summarization—all without task-specific training.
+    \item (May. 2020) OpenAI announces GPT-3\cite{Brown2020} with 100x the parameters of GPT-2 and 10x the parameters of any previous work. GPT-3 had 1000x the dataset size with about 45TB of training text. GPT-3 set a new benchmark in NLP with never-before seen performance and the ability do "few shot learning" where new language tasks could be learned with just a few training examples.
+    \item (Jun. 2021) Aran Komatsuzaki and Ben Wang with help from EleutherAI release GPT-J \cite{mesh-transformer-jax}, the first open-source, large-scale, pre-trained transformer based NLP model. With over 6B parameters and trained on 825GB of text, GPT-J provided performance better than GPT-2, and similar to GPT-3. For the first time, the public had unfettered access to enterprise-sized NLP models previously reserved for big companies and cutting-edge researchers.
+    \item (Aug. 2021) We begin our research with GPT-J.
+\end{enumerate}
+\subsection{Transformer Language Model Explained}
+\subsubsection{Structure}
+The transformer language model has three major steps:
+\begin{itemize}
+    \item Embedding: This tokenizes the input, converting text into a sequence of integers. Then it embeds the integers into a high-dimensional vector space. This vector representation ideally contains semantic information about the input token.
+    \item Self-Attention: The embeddings are then passed through a self-attention layer which looks at the entire input and includes information about context from past tokens. This is a powerful mechanism that allows the model to learn to focus on the most important parts of the input sequence when deciding what to predict.
+    \item Feed-Forward: Finally, the output of the self-attention mechanism is passed through a feed-forward network which, using softmax, outputs a probability distribution over the vocabulary. This distribution is then used to generate a prediction of the next token.
+\end{itemize}
+Together, the self-attention mechanism and the feed-forward network are called a transformer block \cite{yt}. Multiple layers of the transformer block are then stacked together to form a deep network. See figure \ref{fig:transformer}. In general, the deeper the network, the more context and understanding can be stored in the model \cite{yt}.
 
-\begin{figure}[ht]
+\begin{figure}[h]
     \centering
-    \scalebox{0.8}{
-        \definecolor{lblue}{RGB}{220, 234, 240}
-        \definecolor{dblue}{RGB}{0, 21, 79}
-        \newcommand\bluebox[3]{\filldraw [draw=dblue,fill=lblue, line width=0.4mm] (#1-1.75,#2-0.75) rectangle (#1+1.75,#2+0.75) node[text=dblue, font=\footnotesize][midway] {\makecell[l]{#3}}}
-        \newcommand\bluearrow[4]{\draw[dblue, -latex, line width=0.8mm] (#1,#2-0.75) -- (#3,#4+0.75);}
-        \newcommand\bluearrownooffset[4]{\draw[dblue, -latex, line width=0.8mm] (#1,#2) -- (#3,#4);}
-        \newcommand\blueline[4]{\draw[dblue, line width=0.8mm] (#1,#2) -- (#3,#4);}
-        \begin{tikzpicture}
-            \bluebox{0}{0}{\textbf{Gather test dataset}\\(SEC filings, news, social\\media, stock price data)};
-            \bluebox{0}{-2}{\textbf{Evaluate correlations}\\\textbf{between media release}\\\textbf{\& price movement}};
-            \bluebox{2}{-4}{\textbf{Change type of}\\\textbf{input media}};
-            \bluebox{0}{-6}{\textbf{Fine-tune training}\\\textbf{on GPT-J}};
-            \bluebox{2}{-8}{\textbf{Change format of}\\\textbf{input prompt}};
-            \bluebox{0}{-10}{\textbf{Evaluate prediction}\\\textbf{accuracy}};
-            \bluebox{0}{-12}{\textbf{Test and evaluate}\\\textbf{on live data}};
-            \bluearrow{0}{0}{0}{-2};
-            \bluearrow{-1}{-2}{-1}{-6};
-            \bluearrownooffset{0.25}{-4}{-1}{-4};
-            \bluearrow{-1}{-6}{-1}{-10};
-            \bluearrownooffset{0.25}{-8}{-1}{-8};
-            \bluearrow{0}{-10}{0}{-12};
-            \blueline{1.75}{-10}{4.21}{-10};
-            \bluearrownooffset{2.75}{-10}{2.75}{-8.75};
-            \blueline{4.25}{-4.04}{4.25}{-10.04};
-            \bluearrownooffset{4.29}{-4}{3.75}{-4};
-            \blueline{2.75}{-7.25}{2.75}{-5.96};
-            \bluearrownooffset{2.75}{-6}{1.75}{-6};
-        \end{tikzpicture}
-    }
-    \caption{Execution Flow}
-    \label{fig:executionFlow}
+    \includegraphics[width=0.45\textwidth]{transformer.png}
+    \caption{Data flow of a transformer language model \cite{yt}. Input text is ``The Shawshank". After being de-embedded, the final token should be ``Redemption".}
+    \label{fig:transformer}
 \end{figure}
 
-\subsection{Dataset Options}
-This section outlines the available options for dataset creation. Although we do not currently have the resources to create a dataset for each of these options, we have left them here as an aid for future work.
+\subsection{Relevance \& Novelty of Our Approach}
+By our estimation, the vast majority of previous works involving sentiment analysis used a pre-processing step to extract sentiment from the news and then embedded those features into a time-series dataset. News sources were often limited to headlines, tweets and small snippets because of the memory limitations of RNN sentiment classifiers. With the introduction of large transformer networks \cite{Vaswani2017}, capable of processing large amounts of text like OpenAi's GPT-3 \cite{Brown2020} or Wang \& Komatsuzaki's GPT-J \cite{gpt-j}, we believe a new class of trading network can be created. Readily available implementations of GPT-J allow for inputs with up to 2048 input tokens or words. Our method will encode the current world state in a large text input which combines sentiment, real-world facts, and stock price data into a single input.
 
-\subsubsection{Stock Price Data}
-Stock price data is publicly available Yahoo Finance API \cite{yahoofinanceapi}. This source can be used to gather general technical information about a given ticker symbol. 
-For historical price data, the Alpaca Data API v2 \cite{alpacadataapi} can be used. This API gives access to 5 years of historical data for training and live price data for live model inference testing. 
-\subsubsection{SEC Filings}
-The SEC provides public access to their EDGAR database of public company filings \cite{Sec.gov_2021}. The EDGAR API can be used to download the most recent SEC filings for a given company for live trading. Or for training, bulk datasets are available for download. The release dates of each filing can then be labeled with the stock prices of the company before and after the filing.
-\subsubsection{News}
-Theoretically, a huge amout of financial news can be scraped from the following sources, although developing web-scrapers for each source is a massive time commitment. However, a complete dataset would include a backlog of articles from the sources listed in Table \ref{table:newsSources}.
-\begin{table}[ht]
-    \caption{News Sources}
-    \centering
-    \begin{tabular}{|l|l|}
-        \hline
-        \textbf{Source} & \textbf{URL} \\
-        \hline
-        Bloomberg & \href{https://www.bloomberg.com/}{www.bloomberg.com} \\
-        \hline
-        CNBC Finance & \href{https://www.cnbc.com/finance/}{www.cnbc.com/finance} \\
-        \hline
-        Reuters & \href{https://www.reuters.com/}{www.reuters.com} \\
-        \hline
-        Forbes & \href{https://www.forbes.com/}{www.forbes.com} \\
-        \hline
-        CNN Business & \href{https://www.cnn.com/business}{www.cnn.com/business} \\
-        \hline
-        Yahoo Finance & \href{https://finance.yahoo.com/news}{www.finance.yahoo.com/news} \\
-        \hline
-        Wall Street Journal & \href{https://www.wsj.com/}{www.wsj.com/} \\
-        \hline
-		New York Times & \href{https://www.nytimes.com/}{www.nytimes.com/} \\
-        \hline
-    \end{tabular}
-    \label{table:newsSources}
-\end{table}
+\section{Preliminary Study}
+Our study was broken over two semesters, the first focused on developing a small-scale proof of concept test using the GPT-J-6B weights, and the second focused on developing a larger-scale test using our own fine-tuned weights. We refer to the first semester's small scale work as the \emph{preliminary study} and the second semester's larger scale work as the \emph{main study}.
 
-\subsubsection{Social Media}
-Twitter is the best option for social media data because the Twitter API \cite{twitterapi} will allow us to gather timely opinions on a given ticker symbol. After filtering for a specific time period, tweets can be added to our training dataset.
-
-\subsection{Testing \& Evaluation Plan}
+\subsection{Testing \& Evaluation Methodology}
 
 \subsubsection{Media Release Correlations} \label{math}
 To measure the correlation between the release of a media item such as an SEC filing or news story, we will use the standard event study method as detailed in \cite{Neuhierl2010}. This method uses abnormal returns in a given period to calculate the effect of a certain event on a stock's price. Abnormal return for a given day is defined as 
@@ -232,11 +183,10 @@ The second metric is a simple ratio of the actual stock price to the predicted s
     P_a=\left|\frac{P_{actual}}{P_{predicted}}\right|
 \end{equation}
 We will use the price accuracy metric as our loss function in fine-tune training of GPT-J. The format-correctness metric will be used to evaluate the reliability and robustness of our prompt. We may experiment with using the format-correctness metric as a weighted portion of our loss function.
-\section{Small-Scale Implementation}
+\section{Preliminary Study Implementation}
 \subsection{Data Gathering} 
 \subsubsection{News Data}
 Using the freely available New York Times Archive API {Citation Needed}. We downloaded the associated metadata for each New York Times article from January 2006 through October 2022. This subset of the New York Times archive consists of 1,446,289 articles. We then filtered the articles based on the keywords associated with the article, to get articles relevant to a company in our list of top 50 U.S. companies. Our resulting dataset contains 23,428 unique articles from the Times. We have included a table of the top 50 U.S. companies and their associated ticker symbols in Table \ref{table:stockSources} in Appendix \ref{top50}.
-
 
 \subsection{Stock Data Gathering}
 The next step was to collect a dataset of historical stock prices that can be correlated with the news articles at our disposal. Using the Alpaca Data API v2 \cite{alpacadataapi}, we downloaded the historical stock prices for our top 50 U.S. companies. 
@@ -257,7 +207,7 @@ The dataset was naturally skewed to a certain few companies like Facebook, Netfl
     \caption{Number of Events/Company (Top 10)}
     \label{fig:eventsPerCompany}
 \end{figure}
-\section{Results}
+\section{Premilinary Study Results}
 \subsection{Event Study}
 \subsubsection{Standard Methodology}
 Our event study had the goal of investigating if the news releases in our dataset were correlated with abnormal returns in stock price. We use the event study methodology as described above in section \ref{math} for each stock in our dataset. Figure \ref{fig:expected} shows the expected return of Facebook compared to its actual return and reference index. Averaging over all the stocks in our dataset, the event study methodology showed that the events in our dataset were not correlated with abnormal returns in stock price.
@@ -281,22 +231,41 @@ Running inference on models of this scale requires large amounts of parallel com
 Surprisingly, GPT-J was always able to return a parseable output given our test prompt. We have included a sample prompt and response in Appendix \ref{Examples}. We believe that adding a ``\$'' to the end of the prompt made GPT-J more likely to return a parseable output.
 \subsubsection{Price-Accuracy Metric}
 Our limited inference method was unable to predict stock prices with any accuracy. In our dataset, a simple linear regression over the last week of stock prices was able to generate a prediction of the next day's price 52\% of the time. By comparison, the GPT-J model was correct 47.5\% of the time. Both of these numbers are not significantly better from a random guess. 
+
+\section{Main Study}
+\subsection{Data Gathering}
+We scraped and labelled 140,000 news articles from the web with the distribution of sources as described in Figure \ref{fig:newsSources}. 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.48\textwidth]{domainCounts}
+    \caption{Distribution of News Sources}
+    \label{fig:newsSources}
+\end{figure}
+\subsubsection{Labeling Methodology}
+To make sure our dataset was as clean as possible, we used the following labeling method and filtering steps on each of the millions of raw webpages we scraped.
+\begin{enumerate}
+    \item To be sure each webpage was actually an article and not a landing page, directory page or other non-article page, we used the Mozilla Readability library to determine a readability score for each webpage. We then filtered out all webpages with a score less than 90.
+    \item Labelling each article was then done by fuzzy matching company names and ticker symbols to the title and body of the article. We used a list of the top 6500 U.S. companies and their associated ticker symbols to label each article. (See Appendix \ref{top50} for a table of the top 50 U.S. companies and their associated ticker symbols.) Articles with no associated ticker symbol were labeled as ``Unknown'' and were removed from the dataset.
+    \item Articles with no associated publication date were removed from the dataset, and the remaining articles were then correlated with the closing stock price of their associated ticker symbol on the date of publication or date prior to the publication date.
+\end{enumerate}
 \section{Conclusion}
 In conclusion, our study was unable to determine if language models like GPT-J contain any predictive power in the stock market. Further study is needed to determine if natural-language-processing-based models can be used to predict stock prices.
-\subsection{Future Work}
-Future work to improve the significance of our results will include:
+\subsection{Future Work \& Improvements}
+Future work to improve the significance of our results would include:
 \begin{itemize}
     \item Including more data sources (news, and other) to increase the number of events we can analyze.
     \item Including more stocks in our analysis.
     \item Varying prompt format.
     \item Increasing the size of our inference dataset.
 \end{itemize}
+\newpage
 \begin{singlespace}
 	\setstretch{0.9}
 
 \bibliographystyle{IEEEtran}
 \bibliography{./paper.bib}
-
+\onecolumn
+\begin{Center}
 \appendix
 \subsection{Top 50 U.S. Companies (November, 2021)}
 \label{top50}
@@ -361,7 +330,6 @@ Future work to improve the significance of our results will include:
 \label{table:stockSources}
 \end{table}
 
-\onecolumn
 \subsection{Example Inference Promt and Response}
 \label{Examples}
 \begin{lstlisting}[language=json,firstnumber=1]
@@ -373,6 +341,6 @@ Future work to improve the significance of our results will include:
 	]
 }
 \end{lstlisting}
-
+\end{Center}
 \end{singlespace}
 \end{document}
