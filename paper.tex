@@ -86,7 +86,7 @@ Although transformer-based NLP models are adaptable to a wide variety of tasks, 
 
 \subsection{Background}
 \subsubsection{Leading Ideas and Questions}
-Our research is born from that idea that large-scale natural language processing models such as OpenAi's GPT-3 \cite{Brown2020} have captured a large enough understanding of the world, that given the proper input, they can generate novel, winning trades. Taking into account the impressive knowledge displayed by GPT-3 and others in text-completion tasks, we propose that with adequate fine-tuning and well-engineered prompts, such networks can learn to trade like a human simply by reading the news. In theory, with proper promts and adequate training, we can leverage the massive amount of real-world knowledge encoded in the network's weights.
+Our research is born from that idea that large-scale natural language processing models such as OpenAi's GPT-3 \cite{Brown2020} have captured a large enough understanding of the world, that given the proper input, they can generate novel, winning trades. Taking into account the impressive knowledge displayed by GPT-3 and others in text-completion tasks, we propose that with adequate fine-tuning and well-engineered prompts, such networks can learn to trade like a human simply by reading the news. In theory, with proper prompts and adequate training, we can leverage the massive amount of real-world knowledge encoded in the network's weights.
 
 Our research is guided by the following question:
 \begin{quote}
@@ -119,7 +119,7 @@ Most relevant to our work are methods that incorporate sentiment analysis of new
 \begin{figure}[ht]
     \makebox{%
     \includegraphics[scale=0.67]{timeline/timeline}}
-    \caption[Timeline]{Approximate timeline of Bartolomé de Las Casas's life and travels.}
+    \caption[Timeline]{Timeline of Major Transformer-based NLP Models}
 \end{figure}
 \begin{enumerate}
     \item (Jun. 2017) ``Attention Is All You Need" \cite{Vaswani2017} Was a groundbreaking paper introducing the Transformer network. Transformers became the foundation for the next 5+ years of NLP (Natural Language Processing) research.
@@ -207,7 +207,7 @@ The dataset was naturally skewed to a certain few companies like Facebook, Netfl
     \caption{Number of Events/Company (Top 10)}
     \label{fig:eventsPerCompany}
 \end{figure}
-\section{Premilinary Study Results}
+\section{Preliminary Study Results}
 \subsection{Event Study}
 \subsubsection{Standard Methodology}
 Our event study had the goal of investigating if the news releases in our dataset were correlated with abnormal returns in stock price. We use the event study methodology as described above in section \ref{math} for each stock in our dataset. Figure \ref{fig:expected} shows the expected return of Facebook compared to its actual return and reference index. Averaging over all the stocks in our dataset, the event study methodology showed that the events in our dataset were not correlated with abnormal returns in stock price.
@@ -248,17 +248,33 @@ To make sure our dataset was as clean as possible, we used the following labelin
     \item Labelling each article was then done by fuzzy matching company names and ticker symbols to the title and body of the article. We used a list of the top 6500 U.S. companies and their associated ticker symbols to label each article. (See Appendix \ref{top50} for a table of the top 50 U.S. companies and their associated ticker symbols.) Articles with no associated ticker symbol were labeled as ``Unknown'' and were removed from the dataset.
     \item Articles with no associated publication date were removed from the dataset, and the remaining articles were then correlated with the closing stock price of their associated ticker symbol on the date of publication or date prior to the publication date.
 \end{enumerate}
+\subsection{Fine-tuning}
+\subsubsection{Compute}
+Compute for both fine-tuning and our inference testing was provided by the Google Research TPU Research Cloud. Our application was approved within 3 months. Google provided credits for 5 TPUv2-8, 100 preemptible TPUv2-8, and 5 TPUv3-8 for one month. This generous donation would have been valued \$144,000 had we purchased the TPU time ourselves.
+\subsubsection{Training}
+Our dataset of 140,000 was split into a 90K training set, a 10K validation set, and a 40K testing set. Training was done on a TPUv3-8 with a batch size of 32 and 1700 steps. Over training, we saw reductions in loss from around 2.0 to 1.1 (see Figure \ref{fig:loss}). We ran validation tests every 500 steps and our validation loss mirrored our training loss.
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.45\textwidth]{loss.png}
+    \caption{Fine-tune Training Loss vs. Steps}
+    \label{fig:loss}
+\end{figure}
+\subsection{Main Study Results}
+In testing we found that our fine-tuned model performed no better than random at predicting the next day's stock price. Our fine-tuned model had a prediction accuracy of 50.58\% (N=40,000 articles). Similarly, the un-fine-tuned GPT-J-6B weights had a prediction accuracy of 50.63\% (N=40,000 articles). When compared to a small-scale human test, humans outperformed our model by about 5\%. Human testing had a prediction accuracy of 56\% (N=120 articles).
+
 \section{Conclusion}
-In conclusion, our study was unable to determine if language models like GPT-J contain any predictive power in the stock market. Further study is needed to determine if natural-language-processing-based models can be used to predict stock prices.
+Using our training and testing testing methods, GPT-J performs no better than random when predicting the direction of price movement based on a news story. Furthermore, fine-tuning the model with 100,000 articles does not improve prediction accuracy. 
 \subsection{Future Work \& Improvements}
-Future work to improve the significance of our results would include:
+We suspect that even though we saw a decrease in loss during training, that this loss only represents the network learning our prompt format. The following steps may improve our technique:
 \begin{itemize}
     \item Including more data sources (news, and other) to increase the number of events we can analyze.
-    \item Including more stocks in our analysis.
     \item Varying prompt format.
-    \item Increasing the size of our inference dataset.
+    \item More carefully labelled data to reduce noise in the dataset.
+    \item Manipulating the loss function to pay more attention to the stock price.
+    \item Increasing the size of our training dataset.
+    \item Live-training to build a more accurate world model.
 \end{itemize}
-\newpage
+% \newpage
 \begin{singlespace}
 	\setstretch{0.9}
 
@@ -330,7 +346,7 @@ Future work to improve the significance of our results would include:
 \label{table:stockSources}
 \end{table}
 
-\subsection{Example Inference Promt and Response}
+\subsection{Example Inference Prompt and Response}
 \label{Examples}
 \begin{lstlisting}[language=json,firstnumber=1]
 {
